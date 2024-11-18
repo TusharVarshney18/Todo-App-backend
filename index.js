@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const allowedOrigins = [
-  "http://localhost:5173", // Local frontend
   "https://todo-app-frontend-x8wj.vercel.app", // Deployed frontend
 ];
 const corsOptions = {
