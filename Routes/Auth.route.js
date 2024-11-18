@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const cors = require("cors");
 const {
   registerUser,
   loginUser,
@@ -8,12 +7,10 @@ const {
   logout,
 } = require("../Controllers/Authcontroller.js");
 
-
-//Middleware
-
+// Authentication Routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/profile", getProfile);
+router.get("/profile", getProfile); // Protected route (implement auth middleware if required)
 router.post("/logout", logout);
 
 module.exports = router;
