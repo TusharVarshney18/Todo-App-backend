@@ -11,15 +11,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const corsOptions = {
-  origin: "https://todo-app-frontend-x8wj.vercel.app/", // Your frontend's URL
-  credentials: true, // Allow credentials (cookies)
+  origin: "https://todo-app-frontend-x8wj.vercel.app",
+  credentials: true,
 };
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // Built-in JSON parser in Express
 app.use(cookieParser());
+app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // Handle preflight requests
+
 
 // Routes
 app.use("/api/todos", todoRoutes);
