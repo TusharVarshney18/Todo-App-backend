@@ -10,17 +10,16 @@ dotenv.config(); // Load environment variables
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// const corsOptions = {
-//   origin: "*",
-//   credentials: true, //access-control-allow-credentials:true
-//   optionSuccessStatus: 200,
-// };
+const corsOptions = {
+  origin: "https://todo-app-frontend-x8wj.vercel.app/", // Your frontend's URL
+  credentials: true, // Allow credentials (cookies)
+};
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // Built-in JSON parser in Express
 app.use(cookieParser());
-app.use(cors());
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 // Routes
 app.use("/api/todos", todoRoutes);
