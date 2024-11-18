@@ -10,17 +10,32 @@ dotenv.config(); // Load environment variables
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+const allowedOrigins = [
+  "http://localhost:5173", // Local development
+  "https://todo-app-frontend-x8wj.vercel.app", // Deployed frontend
+];
+
 const corsOptions = {
-  origin: "https://todo-app-frontend-x8wj.vercel.app",
-  credentials: true,
-};
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Allow cookies
+}; 
+
+
+
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // Built-in JSON parser in Express
 app.use(cookieParser());
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight requests
+
 
 
 // Routes
