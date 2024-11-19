@@ -24,7 +24,10 @@ const PORT = process.env.PORT || 3000;
 //   })
 // );
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://todo-app-frontend-sable.vercel.app',  // Exact frontend URL
+  credentials: true,  // Allow credentials to be sent
+}));
 
 
 // Middleware
