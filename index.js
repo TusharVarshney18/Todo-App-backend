@@ -10,18 +10,21 @@ dotenv.config(); // Load environment variables
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure Helmet for Security
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://vercel.live"],
-      },
-    },
-    crossOriginEmbedderPolicy: false, // Adjust for cross-origin resources
-  })
-);
+// // Configure Helmet for Security
+// app.use(
+//   helmet({
+//     contentSecurityPolicy: {
+//       directives: {
+//         defaultSrc: ["'self'"],
+//         scriptSrc: ["'self'", "https://vercel.live"],
+//       },
+//     },
+//     crossOriginEmbedderPolicy: false, // Adjust for cross-origin resources
+//   })
+// );
+
+router.use(cors());
+
 
 // Middleware
 app.use(express.json()); // Parse incoming JSON

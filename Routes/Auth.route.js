@@ -9,14 +9,6 @@ const {
   logout,
 } = require("../Controllers/Authcontroller.js");
 
-// CORS Configuration for this Router
-router.use(
-  cors({
-    credentials: true,
-    origin: "https://todo-app-frontend-x8wj.vercel.app",
-  })
-);
-
 // Authentication Routes
 router.post("/register", (req, res, next) => {
   console.log("Register endpoint hit with body:", req.body); // Debugging log
