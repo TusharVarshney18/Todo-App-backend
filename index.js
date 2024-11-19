@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 dotenv.config(); // Load environment variables
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = "https://todo-app-backend-git-main-tushar-varshneys-projects.vercel.app" || 3000;
 
 
 
