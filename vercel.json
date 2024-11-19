@@ -18,11 +18,11 @@
          "headers": [
             {
                "key": "Content-Security-Policy",
-               "value": "default-src 'self'; script-src 'self' https://vercel.live; connect-src 'self' https://todo-app-frontend-x8wj.vercel.app;"
+               "value": "default-src 'self'; script-src 'self' https://vercel.live; connect-src 'self' https://vercel.live; img-src 'self'; style-src 'self' 'unsafe-inline';"
             },
             {
                "key": "Access-Control-Allow-Origin",
-               "value": "https://todo-app-frontend-x8wj.vercel.app"
+               "value": "*"
             },
             {
                "key": "Access-Control-Allow-Credentials",
