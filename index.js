@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const todoRoutes = require("./Routes/todos.js");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
+const cors = require("cors");
 
 dotenv.config(); // Load environment variables
 
