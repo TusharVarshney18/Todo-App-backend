@@ -34,10 +34,7 @@ app.use("/api/todos", todoRoutes); // Todo routes
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Database connected to MongoDB"))
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err.message);
