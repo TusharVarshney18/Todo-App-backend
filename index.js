@@ -19,7 +19,7 @@ app.use(
         scriptSrc: ["'self'", "https://vercel.live"],
       },
     },
-    crossOriginEmbedderPolicy: false, // Disable if you're using cross-origin resources
+    crossOriginEmbedderPolicy: false, // Adjust for cross-origin resources
   })
 );
 
@@ -29,21 +29,35 @@ app.use(express.urlencoded({ extended: false })); // Parse URL-encoded data
 app.use(cookieParser()); // Parse cookies
 
 // Routes
-app.use("/", require("./Routes/Auth.route.js"));
-app.use("/api/todos", todoRoutes);
+app.use("/", require("./Routes/Auth.route.js")); // Authentication routes (unchanged)
+app.use("/api/todos", todoRoutes); // Todo routes
 
-// MongoDB connection
+// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("Database connected to MongoDB"))
-  .catch((err) => console.error("Error connecting to MongoDB:", err));
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err.message);
+    process.exit(1); // Exit process if database connection fails
+  });
 
 // Test route
 app.get("/", (req, res) => {
   res.json({ message: "API is working!" });
+});
+
+// Error Handling for Unmatched Routes
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
 });
 
 // Start server
