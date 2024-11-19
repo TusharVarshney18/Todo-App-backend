@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 // );
 
 app.use(cors({
-  origin: 'https://todo-app-frontend-sable.vercel.app',  // Exact frontend URL
+  origin: ['https://todo-app-frontend-sable.vercel.app', 'http://localhost:5173'],  // Exact frontend URL
   credentials: true,  // Allow credentials to be sent
 }));
 
