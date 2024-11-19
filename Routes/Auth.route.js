@@ -1,6 +1,6 @@
 const express = require("express");
-const router = express.Router();
 const cors = require("cors");
+const router = express.Router();
 
 const {
   registerUser,
@@ -9,16 +9,22 @@ const {
   logout,
 } = require("../Controllers/Authcontroller.js");
 
+// CORS Configuration for this Router
+router.use(
+  cors({
+    credentials: true,
+    origin: "https://todo-app-frontend-x8wj.vercel.app",
+  })
+);
+
 // Authentication Routes
-router.use(cors({
-credentials:true,
-origin:"https://todo-app-frontend-x8wj.vercel.app"
-}))
+router.post("/register", (req, res, next) => {
+  console.log("Register endpoint hit with body:", req.body); // Debugging log
+  next();
+}, registerUser);
 
-
-router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/profile", getProfile); // Protected route (implement auth middleware if required)
+router.get("/profile", getProfile); // Protected route
 router.post("/logout", logout);
 
 module.exports = router;
