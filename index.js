@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 //   })
 // );
 
-router.use(cors());
+app.use(cors());
 
 
 // Middleware
