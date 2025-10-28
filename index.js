@@ -15,8 +15,8 @@ const allowedOrigins = [
   "https://todo-app-frontend-sable.vercel.app",
   "http://localhost:5173",
   "http://localhost:3001",
-  "http://localhost:3000"
-
+  "http://localhost:3000",
+  "https://todo-frontend-rose-seven.vercel.app/"
 ];
 app.use(
   cors({
