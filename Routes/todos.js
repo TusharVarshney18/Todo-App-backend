@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const requireAuth = require("../Middleware/requireAuth");
-const todos = require("../Controllers/TodoController");
+const requireAuth = require("../Middleware/requireAuth.js");
+const todos = require("../Controllers/Todocontroller.js");
 
 router.use(requireAuth);
 router.get("/", todos.list);
