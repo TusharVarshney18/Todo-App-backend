@@ -1,23 +1,17 @@
 const bcrypt = require("bcrypt");
 
-const hashpassword = (password) => {
-  return new Promise((resolve, reject) => {
-    bcrypt.genSalt(12, (err, salt) => {
-      if (err) {
-        reject(err);
-      }
-      bcrypt.hash(password, salt, (err, hash) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(hash);
-      });
-    });
-  });
-};
+const ROUNDS = Number(process.env.BCRYPT_ROUNDS || 10);
 
-const comparePassword = (password, hashed) => {
-  return bcrypt.compare(password, hashed);
-};
+async function hashPassword(password) {
+  if (typeof password !== "string" || password.length < 6) {
+    throw new Error("Invalid password");
+  }
+  const salt = await bcrypt.genSalt(ROUNDS);
+  return bcrypt.hash(password, salt);
+}
 
-module.exports = { comparePassword, hashpassword };
+function comparePassword(plain, hashed) {
+  return bcrypt.compare(plain, hashed);
+}
+
+module.exports = { hashPassword, comparePassword };

@@ -1,125 +1,89 @@
-const express = require("express");
-const User = require("../models/user.js");
 const jwt = require("jsonwebtoken");
-const { comparePassword, hashpassword } = require("../Middleware/auth.js");
-const secretkey = process.env.JWT_SECRET || "your_jwt_secret";
+const User = require("../models/user");
+const { hashPassword, comparePassword } = require("../Middleware/auth.js");
 
-// Register User
-const registerUser = async (req, res) => {
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES = process.env.JWT_EXPIRES || "1d";
+
+function setAuthCookie(res, token) {
+  const isProd = process.env.NODE_ENV === "production";
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProd,
+    path: "/",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+}
+
+exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body || {};
+    if (!name || !email || !password) return res.status(400).json({ error: "All fields are required" });
+    if (password.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) return res.status(409).json({ error: "Email already in use" });
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
-    }
+    const hash = await hashPassword(password);
+    const user = await User.create({ name, email: email.toLowerCase(), hash });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: "Email already in use" });
-    }
-
-    const hashedPassword = await hashpassword(password);
-
-    const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
-
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error("Error in registerUser:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    // ✅ FIX 1: Replace user.signToken() with manual jwt.sign using userId
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+    setAuthCookie(res, token);
+    return res.status(201).json({ user: { id: user.id, email: user.email, name: user.name } });
+  } catch (err) {
+    console.error("registerUser error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Login User
-const loginUser = async (req, res) => {
+exports.loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const user = await User.findOne({ email: email.toLowerCase() }).select("+hash");
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    const ok = await comparePassword(password, user.hash);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, secretkey, {
-      expiresIn: "1d",
-    });
+    // ✅ Already fixed: Uses userId
+    const token = jwt.sign({ userId: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 
-    // Clean up old tokens
-    const validTokens = (user.tokens || []).filter((t) => {
-      const diff = (Date.now() - parseInt(t.SignedAt)) / 1000;
-      return diff < 86400; // Less than 1 day old
-    });
-
-    // Save the token
-    await User.findByIdAndUpdate(user._id, {
-      tokens: [...validTokens, { token, SignedAt: Date.now().toString() }],
-    });
-
-    // Send the token in a secure cookie
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: true, // Ensure 'Secure' flag for production (HTTPS)
-        sameSite: "None", // Allow cross-origin cookie sending
-      })
-      .json({ message: "Login successful", userId: user._id });
-  } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    setAuthCookie(res, token);
+    return res.json({ message: "Login successful", user: { id: user.id, email: user.email, name: user.name } });
+  } catch (err) {
+    console.error("loginUser error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Logout User
-const logout = async (req, res) => {
+exports.logout = async (_req, res) => {
   try {
-    const { token } = req.cookies;
-    if (!token) {
-      return res.status(400).json({ error: "No token provided" });
-    }
-
-    const decoded = jwt.verify(token, secretkey);
-
-    await User.findByIdAndUpdate(decoded.id, {
-      $pull: { tokens: { token } },
-    });
-
-    res.clearCookie("token").json({ message: "Logged out successfully" });
-  } catch (error) {
-    console.error("Logout Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.clearCookie("token", { path: "/" });
+    return res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("logout error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Get Profile
-const getProfile = async (req, res) => {
+exports.getProfile = async (req, res) => {
   try {
-    const { token } = req.cookies;
+    const token = req.cookies?.token;
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    if (!token) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    const decoded = jwt.verify(token, JWT_SECRET);
+    // ✅ FIX 2: Support both userId and id for backward compatibility
+    const userId = decoded.userId || decoded.id;
+    const user = await User.findById(userId).select("-hash");
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const decoded = jwt.verify(token, secretkey);
-    const user = await User.findById(decoded.id).select("-password -tokens");
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error("Error in getProfile:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.json({ user });
+  } catch (err) {
+    console.error("getProfile error:", err);
+    return res.status(401).json({ error: "Unauthorized" });
   }
 };
-
-module.exports = { registerUser, loginUser, getProfile, logout };

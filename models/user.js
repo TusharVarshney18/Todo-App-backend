@@ -1,26 +1,21 @@
 const mongoose = require("mongoose");
 
-
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
+const UserSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 120 },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, "Invalid email"],
+    },
+    hash: { type: String, required: true, select: false },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true, // Ensures no duplicate emails
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  tokens: [{ type: Object }],
-});
+  { timestamps: true, versionKey: false }
+);
 
+UserSchema.index({ email: 1 }, { unique: true });
 
-
-const Usermodel = mongoose.model("User", userSchema);
-
-module.exports = Usermodel;
+module.exports = mongoose.model("User", UserSchema);
