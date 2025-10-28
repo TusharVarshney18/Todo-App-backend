@@ -50,6 +50,33 @@ const authLimiter = rateLimit({
 app.use("/login", authLimiter);
 app.use("/register", authLimiter);
 
+// ✅ NEW: Root route (Welcome message)
+app.get("/", (req, res) => {
+  res.json({
+    message: "Todo App API - Backend Server",
+    version: "1.0.0",
+    status: "running",
+    endpoints: {
+      auth: {
+        register: "POST /register",
+        login: "POST /login",
+        logout: "POST /logout",
+        profile: "GET /profile"
+      },
+      todos: {
+        list: "GET /api/todos",
+        create: "POST /api/todos",
+        update: "PATCH /api/todos/:id",
+        delete: "DELETE /api/todos/:id"
+      },
+      utility: {
+        health: "GET /health"
+      }
+    },
+    documentation: "https://github.com/your-username/todo-app-backend"
+  });
+});
+
 // Routes
 app.use("/", require("./Routes/Auth.route.js"));
 app.use("/api/todos", require("./Routes/todos.js"));
@@ -78,3 +105,6 @@ mongoose
     console.error("Mongo connection error:", err.message);
     process.exit(1);
   });
+
+// ✅ Export for Vercel serverless
+module.exports = app;
