@@ -9,12 +9,13 @@ function setAuthCookie(res, token) {
   const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
     secure: isProd,
     path: "/",
     maxAge: 24 * 60 * 60 * 1000,
   });
 }
+
 
 exports.registerUser = async (req, res) => {
   try {
